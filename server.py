@@ -41,7 +41,6 @@ class RenderResult(BaseModel):
     size_bytes: int
     quality: str
     format: str
-    opened_in_browser: bool
 
 
 QUALITY_FLAGS = {"low": "-ql", "medium": "-qm", "high": "-qh", "fourk": "-qk"}
@@ -168,14 +167,17 @@ def render_animation(
     quality: Literal["low", "medium", "high", "fourk"] = "medium",
     output_format: Literal["mp4", "webm", "gif"] = "mp4",
     scene_name: Annotated[str, Field(description="Scene class to render if the script defines several.")] = "",
-    open_in_browser: Annotated[bool, Field(description="Open the viewer page in the browser after rendering.")] = True,
 ) -> RenderResult:
-    """Render an animation and present it on a local viewer page: the video plays muted on a loop,
-    with the title, summary and explanation points beneath it. Write all viewer-page text (title,
-    summary, points) and all text inside the animation in English. The page embeds the video and is
-    fully self-contained: sending the single .html file shares the whole thing, and it can be
-    published as a claude.ai artifact for a shareable link. Returns file paths and video metadata -
-    verify duration_seconds roughly matches the scene you wrote."""
+    """Render an animation onto a chalkboard-style viewer page: the video plays muted on a loop, with
+    a title, summary and explanation points beneath it. Write all viewer-page text (title, summary,
+    points) and all text inside the animation in English. Returns file paths and video metadata -
+    verify duration_seconds roughly matches the scene you wrote.
+
+    This tool only renders to local files - it does not open a browser or publish anywhere. Next
+    steps for the calling assistant: publish page_path with the Artifact tool to give the user a
+    shareable link (the page is a single self-contained .html with the video embedded as a data URI,
+    so it needs no other files), then call cleanup_render(page_path) to delete the local video/html
+    once the artifact is published, so renders do not pile up on disk."""
     render_dir = tempfile.mkdtemp(prefix="tafel_")
     try:
         script_path = os.path.join(render_dir, "scene.py")
@@ -229,17 +231,33 @@ def render_animation(
         with open(page_path, "w") as f:
             f.write(_viewer_page(video_path, output_format, title, summary, points, meta))
 
-        opened = False
-        if open_in_browser:
-            opened = subprocess.run(["open", page_path], capture_output=True).returncode == 0
-
         return RenderResult(
             video_path=video_path, page_path=page_path, scene=scene,
             duration_seconds=duration, size_bytes=size,
-            quality=quality, format=output_format, opened_in_browser=opened,
+            quality=quality, format=output_format,
         )
     finally:
         shutil.rmtree(render_dir, ignore_errors=True)
+
+
+@mcp.tool()
+def cleanup_render(page_path: str) -> bool:
+    """Delete the local video and viewer-page files for a previous render_animation call, identified
+    by its page_path. Call this after the page has been published with the Artifact tool, so rendered
+    videos do not accumulate in the output directory. Returns True if any file was removed."""
+    real_dir = os.path.realpath(OUTPUT_DIR)
+    real_page = os.path.realpath(page_path)
+    if os.path.dirname(real_page) != real_dir or not real_page.endswith(".html"):
+        raise ValueError("page_path must be an .html file directly inside the Tafel output directory.")
+
+    stem = os.path.splitext(real_page)[0]
+    removed = False
+    for entry in os.listdir(real_dir):
+        entry_path = os.path.join(real_dir, entry)
+        if os.path.splitext(entry_path)[0] == stem:
+            os.remove(entry_path)
+            removed = True
+    return removed
 
 
 if __name__ == "__main__":
