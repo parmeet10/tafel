@@ -8,6 +8,28 @@ artifact, so you get a shareable link - no local file to manage.
 
 Claude writes the animation code; your machine renders it.
 
+## Example
+
+> "explain how Fourier series build a square wave from sine waves, with an animation"
+
+[Fourier Series: Building a Square Wave from Sines](https://claude.ai/code/artifact/53417ebb-e390-4ef9-acd3-d3004476fd1b) -
+one odd harmonic added at a time, the running sum snapping closer to a
+dashed target square wave with each term, the formula at the top growing in
+matching colors, ending on 25 terms and the Gibbs overshoot that never goes
+away. Generated end-to-end from that one sentence.
+
+## Why it exists
+
+Claude is a text model: on its own it can describe how a Fourier series or a
+TCP handshake works, or sketch a single static diagram - it cannot output a
+video, and generating even one genuinely coherent image showing motion or a
+process over time is out of reach. Tafel closes that specific gap. Claude
+writes a [manim](https://www.manim.community/) scene - code, which it's
+good at - and manim renders that code into real video frames locally. For
+anything where a moving picture explains more than words or a still image
+(a process unfolding, a wave building term by term, state changing over
+time), that's a capability Claude doesn't otherwise have.
+
 ## Why it's cheap
 
 AI video generators (Sora, Veo, Runway, Pika, ...) generate pixels directly:
