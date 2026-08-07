@@ -12,12 +12,15 @@ Claude writes the animation code; your machine renders it.
 
 > "explain how Fourier series build a square wave from sine waves, with an animation"
 
-**[▶ Watch the render](examples/fourier-square-wave.mp4)** - one odd
-harmonic added at a time, the running sum snapping closer to a dashed
-target square wave with each term, the formula at the top growing in
-matching colors, ending on 25 terms and the Gibbs overshoot that never goes
-away. Rendered end-to-end from that one sentence - full interactive version
-(with the synced explanation blocks) [here](https://claude.ai/code/artifact/51681e64-525f-4719-b327-b8e28fe10d3d).
+[![Fourier series building a square wave, 25 terms, showing the Gibbs overshoot](examples/fourier-square-wave.jpg)](examples/fourier-square-wave.mp4)
+
+Final frame above - **[▶ watch the full render](examples/fourier-square-wave.mp4)**
+to see it build up: one odd harmonic added at a time, the running sum
+snapping closer to a dashed target square wave with each term, the formula
+at the top growing in matching colors, ending on 25 terms and the Gibbs
+overshoot that never goes away. Rendered end-to-end from that one sentence -
+full interactive version (with the synced explanation blocks)
+[here](https://claude.ai/code/artifact/51681e64-525f-4719-b327-b8e28fe10d3d).
 
 ## Why it exists
 
