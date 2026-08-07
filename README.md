@@ -6,8 +6,33 @@ muted on a loop, with a title, a summary and detailed, click-to-seek
 explanation blocks beneath it. Claude publishes the page as a claude.ai
 artifact, so you get a shareable link - no local file to manage.
 
-Claude writes the animation code; your machine renders it. No tokens are
-spent on pixels - only on the scene script and the explanation text.
+Claude writes the animation code; your machine renders it.
+
+## Why it's cheap
+
+AI video generators (Sora, Veo, Runway, Pika, ...) generate pixels directly:
+the model outputs the video itself, frame by frame, so cost and time scale
+with duration and resolution - a few seconds of video can cost real money
+and take minutes, every single time, even for small tweaks.
+
+Tafel doesn't generate video at all. Claude only writes a
+[manim](https://www.manim.community/) Python script - a few hundred tokens
+of code describing shapes, text, and motion - plus the title/summary/
+explanation text. Manim (a deterministic, open-source animation engine, the
+same one behind 3Blue1Brown's videos) then renders that script into actual
+pixels locally, using ffmpeg/cairo/pango on your own machine. The model
+never sees or produces a single frame.
+
+Consequences:
+- **Cost is bounded by text, not video** - a 30s clip and a 3-minute deep
+  dive cost roughly the same in tokens; only your local render time differs.
+- **Iteration is nearly free** - "slow down step 3" or "make the arrows
+  curved" is a small code edit, not a full pixel regeneration from a prompt.
+- **Rendering is free and unlimited** - it's your CPU/GPU, not a metered API,
+  so there's no per-render fee and no external service dependency once the
+  Python packages are installed.
+- **Fully offline after install** - no network calls happen during a render;
+  everything runs locally except the one Claude Code conversation.
 
 ## Requirements
 
